@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src='https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js'></script>
+    <script>        
+        $(document).ready(function() {
+            $('#reqBtn').on('click', function() {
+                // $('#upimg')[0] : jQuery에서 객체 추출 : <input type=file ... >
+                //              .files : 선택한 파일 => 배열(FileList)로 반환 [File객체]
+                // 
+                fileList = $('#upimg')[0].files
+                if (fileList.length == 0) { //사용자가 파일을 선택했는지 확인
+                    alert("이미지 파일을 선택하세요.")
+                    return
+                }
+                upImg = fileList[0]  //File 객체 반환. File.type : image/jpg - mime type 반환. image가 아니면 전송안되도록 처리.
+                if (!upImg.type.startsWith('image')) {
+                    alert("이미지 파일이 아닙니다.")
+                    return 
+                }
+
+                // FormData() : 요청파라미터를 저장하는 객체
+                // append(name, value) 로 저장
+                reqData = new FormData()
+                reqData.append('upimg', upImg)
+                console.log(reqData);
+                
+                $.ajax({
+                    "url":"http://58.181.51.162:5500/api/predict",
+                    "method":"post",
+                    "data":reqData, //요청파라미터 - 이미지
+                    'dataType':'json', //응답으로 받은 json 문자열을 javascript 객체로 변화해서 success함수에 전달.
+                    "processData":false, //데이터를 문자열로 바꿀지 여부. true: 문자열
+                    "contentType":false, //multpart/form-data로 전송
+                    "success": function(res) {
+                        // alert(res.img_url)
+                        console.log(res);
+                        html = `
+                            <ul>
+                                <h3>인식 결과</h3>
+                                ${res.pre_result}<br>
+                                <h3>후처리 결과</h3>
+                                이름: ${res.name}<br>
+                                주민등록번호: ${res.id_number}<br>
+                                주소: ${res.address}<br>
+                                발급일자: ${res.issue_date}<br>
+                                발급자: ${res.issuer}<br><br>
+                                이미지 속 인식된 텍스트<br><b><img src="${res.url}" /></br>
+                            </ul>`
+                        
+                        
+
+                        $('#result').html(html)
+                    },
+                    "error":function(e){
+                        alert(e)
+                    }
+                       
+                });
+            });
+        })
+    </script>
+    <script>        
+        $(document).ready(function() {
+            $('#reqBtn_f').on('click', function() {
+                // $('#upimg')[0] : jQuery에서 객체 추출 : <input type=file ... >
+                //              .files : 선택한 파일 => 배열(FileList)로 반환 [File객체]
+                // 
+                fileList = $('#upimg')[0].files
+                if (fileList.length == 0) { //사용자가 파일을 선택했는지 확인
+                    alert("이미지 파일을 선택하세요.")
+                    return
+                }
+                upImg = fileList[0]  //File 객체 반환. File.type : image/jpg - mime type 반환. image가 아니면 전송안되도록 처리.
+                if (!upImg.type.startsWith('image')) {
+                    alert("이미지 파일이 아닙니다.")
+                    return 
+                }
+
+                // FormData() : 요청파라미터를 저장하는 객체
+                // append(name, value) 로 저장
+                reqData = new FormData()
+                reqData.append('upimg', upImg)
+                console.log(reqData);
+                
+                $.ajax({
+                    "url":"http://58.181.51.162:5500/api/predict2",
+                    "method":"post",
+                    "data":reqData, //요청파라미터 - 이미지
+                    'dataType':'json', //응답으로 받은 json 문자열을 javascript 객체로 변화해서 success함수에 전달.
+                    "processData":false, //데이터를 문자열로 바꿀지 여부. true: 문자열
+                    "contentType":false, //multpart/form-data로 전송
+                    "success": function(res) {
+                        // alert(res.img_url)
+                        console.log(res);
+                        html = `
+                            <ul>
+                                <h3>인식 결과</h3>
+                                ${res.pre_result}<br>
+                                <h3>후처리 결과</h3>
+                                이름: ${res.name}<br>
+                                주민등록번호: ${res.id_number}<br>
+                                나라: ${res.country}<br>
+                                발급일자: ${res.issue_date}<br>
+                                발급자격: ${res.qualification}<br><br>
+                                이미지 속 인식된 텍스트<br><b><img src="${res.url}" /></br>
+                            </ul>`
+                        $('#result').html(html)
+                    },
+                    "error":function(e){
+                        alert(e)
+                    }
+                });
+            });
+        })
+    </script>
+</head>
+<body>
+
+    <input type='file' name='upimg' id='upimg'>
+    <button type='button' id='reqBtn'>주민등록증 예측</button>
+    <button type='button' id='reqBtn_f'>외국인등록증 예측</button>
+    
+    <div id='result'>
+        
+    </div>
+</body>
+</html>
